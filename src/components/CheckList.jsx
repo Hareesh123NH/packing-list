@@ -82,23 +82,7 @@ function Checklist() {
     return total > 0 ? Math.round((done / total) * 100) : 0;
   };
 
-  const handleDeleteTrip = (e) => {
-    e.stopPropagation(); // Prevent triggering trip selection
 
-    // Remove checklist from localStorage
-    localStorage.removeItem(`checklist_${trip.id}`);
-
-    // Update trips list
-    const updatedTrips = trips.filter(t => t.id !== trip.id);
-    setTrips(updatedTrips);
-    localStorage.setItem("trips", JSON.stringify(updatedTrips));
-
-    // Clear selection if needed
-    if (selectedTripId === trip.id) {
-      setSelectedTripId(null);
-      setItems({});
-    }
-  };
 
 
   return (
@@ -127,34 +111,58 @@ function Checklist() {
             </button>
           </div>
         </div>
+
+
         <div className="mb-4 space-y-2">
-          {trips.map((trip) => {
-            const progress = trip.progress ?? 0;
+          {trips.length === 0 ? (
+            <p className="text-center text-gray-500">🚫 You need to add new trip.</p>
+          ) :
+              trips.map((trip) => {
+                const progress = trip.progress ?? 0;
 
-            return (
-              <div
-                key={trip.id}
-                className={`relative p-2 border rounded cursor-pointer ${trip.id === selectedTripId ? "bg-blue-50" : ""}`}
-                onClick={() => setSelectedTripId(trip.id)}
-              >
-                {/* Delete button at top-right */}
-                <button
-                  onClick={handleDeleteTrip}
-                  className="absolute top-1 right-2 text-red-600 text-xs hover:underline"
-                >
-                  Delete
-                </button>
+                const handleDeleteTrip = (e) => {
+                  e.stopPropagation(); // Prevent triggering trip selection
 
-                <div>
-                  <div className="font-medium">{trip.name}</div>
-                  <div className="text-sm text-gray-500">{trip.date} • {trip.location}</div>
-                  <div className="w-full bg-gray-200 h-2 rounded mt-1">
-                    <div className="bg-green-500 h-2 rounded" style={{ width: `${progress}%` }} />
+                  // Remove checklist from localStorage
+                  localStorage.removeItem(`checklist_${trip.id}`);
+
+                  // Update trips list
+                  const updatedTrips = trips.filter(t => t.id !== trip.id);
+                  setTrips(updatedTrips);
+
+                  localStorage.setItem("trips", JSON.stringify(updatedTrips));
+
+                  // Clear selection if needed
+                  if (selectedTripId === trip.id) {
+                    setSelectedTripId(null);
+                    setItems({});
+                  }
+                };
+
+                return (
+                  <div
+                    key={trip.id}
+                    className={`relative p-2 border rounded cursor-pointer ${trip.id === selectedTripId ? "bg-blue-50" : ""}`}
+                    onClick={() => setSelectedTripId(trip.id)}
+                  >
+                    <button
+                      onClick={handleDeleteTrip}
+                      className="absolute top-1 right-2 text-red-600 text-xs hover:underline"
+                    >
+                      Delete
+                    </button>
+
+                    <div>
+                      <div className="font-medium">{trip.name}</div>
+                      <div className="text-sm text-gray-500">{trip.date} • {trip.location}</div>
+                      <div className="w-full bg-gray-200 h-2 rounded mt-1">
+                        <div className="bg-green-500 h-2 rounded" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })
+            }
         </div>
 
 
@@ -184,12 +192,15 @@ function Checklist() {
           </div>
         ))}
 
-        <button
-          onClick={handleAddCategory}
-          className="w-full bg-purple-600 text-white py-2 rounded mt-4 hover:cursor-alias"
-        >
-          + Add Category
-        </button>
+        {selectedTripId && (
+          <button
+            onClick={handleAddCategory}
+            className="w-full bg-purple-600 text-white py-2 rounded mt-4 hover:cursor-alias"
+          >
+            + Add Category
+          </button>
+        )}
+
 
         <div>
           <h2 className="text-md font-semibold flex items-center gap-2">
